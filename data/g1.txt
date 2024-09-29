@@ -1,0 +1,44 @@
+What is your move? d2d4
+The bot plays f7f6
+eWhat is your move? e2e4
+That is an invalid move. Try again.
+What is your move? c2c4
+The bot plays a7a6
+eWhat is your move? 2e4
+The bot plays c7c6
+What is your move? d1h5
+The bot plays g7g6
+What is your move? h5h3
+The bot plays f8g7
+What is your move? e1h6
+That is an invalid move. Try again.
+What is your move? c1h6
+The bot plays e8f7
+What is your move? h6g7
+The bot plays d8b6
+What is your move? g7h8
+The bot plays d7d6
+What is your move? h3h7
+The bot plays f7e6
+What is your move? d4d5
+The bot plays e6e5
+What is your move? g1f3 
+The bot plays e5f4
+What is your move? h7g6
+The bot plays b6a5
+What is your move? b1c3
+The bot plays b7b6
+What is your move? g6f5
+The bot plays c8f5
+What is your move? f1d3
+The bot plays b6b5
+What is your move? e1g1
+The bot plays c6d5
+What is your move? e4d5
+The bot plays a5a2
+What is your move? a1a2
+The bot plays f5h7
+What is your move? h2h3
+The bot plays b8c6
+What is your move? c3e2
+Game over!

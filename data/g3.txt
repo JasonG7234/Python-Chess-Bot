@@ -1,0 +1,21 @@
+What is your move? d2d4
+The bot plays h7h5
+What is your move? c1f4
+The bot plays c7c6
+What is your move? e2e4
+The bot plays h5h4
+What is your move? b1c3
+The bot plays b7b6
+What is your move? f1c4
+The bot plays f7f6
+What is your move? g1f3
+The bot plays h8h7
+What is your move? e1g1
+The bot plays c8b7
+What is your move? e4e5
+CAPTURE
+The bot plays f6f5
+What is your move? f3g5
+The bot plays h7h6
+What is your move? c4f7
+Game over!

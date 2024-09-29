@@ -1,0 +1,46 @@
+# RULES - Castle, promote, recapture, capture, undefended squares
+
+What is your move? d2d4
+The bot plays d7d6
+What is your move? e2e4
+The bot plays c7c6
+What is your move? g1f3
+The bot plays f7f6
+c1What is your move? c1f4
+The bot plays e8d7
+What is your move? f1c4
+The bot plays d8e8
+What is your move? e1g1
+The bot plays a7a5
+What is your move? b1c3
+The bot plays e8d8
+What is your move? e4e5
+The bot plays g7g6
+What is your move? e5e6
+The bot plays d7e8
+What is your move? d4d5
+The bot plays a8a7
+What is your move? f1e1
+The bot plays d8c7
+What is your move? d1d4
+The bot plays c8e6
+What is your move? d5e6
+The bot plays e8d8
+What is your move? d4a7
+The bot plays f6f5
+What is your move? a1d1
+The bot plays f8g7
+What is your move? f4d6
+The bot plays e7d6
+What is your move? e6e7
+The bot plays d8c8
+What is your move? e7e8
+That is an invalid move. Try again.
+What is your move? e7e8q
+The bot plays c7d8
+What is your move? a7b6
+The bot plays d8e8
+What is your move? e1e8
+The bot plays c8d7
+What is your move? b6d8
+Game over!
