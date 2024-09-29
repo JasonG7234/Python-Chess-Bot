@@ -44,6 +44,13 @@ def squares_attacked(board):
         attackers_count += len(board.attackers(chess.WHITE, square))
     return attackers_count
 
+def is_open_file(board, square):
+    file = chess.square_file(square)
+    for file_in_front in range(file, 8):
+        if board.piece_at(chess.square(file_in_front, chess.square_rank(square)) == "p"):
+            return False
+    return True
+
 def decide_move():
 
     # Define the environment

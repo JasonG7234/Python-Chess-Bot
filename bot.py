@@ -75,7 +75,12 @@ class ChessBot:
             move_dict[move] += 0.1*new_squares_attacked(self.board, move)
             
             # Get rooks to open ranks and then 7th rank
-            # Look for knight forks
+            if piece_making_move(self.board, move) == "r":
+                move_dict[move] += 0.5 if chess.square_rank(move.to_square) == 7 else 0
+                
+                if is_open_file(self.board, move.to_square):
+                    move_dict[move] += 0.5
+            
         
         return move_dict
         
