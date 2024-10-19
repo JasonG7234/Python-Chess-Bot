@@ -1,7 +1,36 @@
 from utils import *
 import random
 
-class ChessBot:
+MAX_DEPTH = 3
+def score_moves_recurse(board, count, is_white):
+    
+    if count >= MAX_DEPTH:
+        return None, score_position(board, is_white)
+        
+    # Turn legal moves into dictionary with scoring
+    move_dict = {key: 0 for key in list(board.legal_moves)}
+    side = "White" if is_white else "Black"
+
+    count+=1
+    for move in list(board.legal_moves):
+        # Recurse into moves
+        temp_board = board.copy()
+        print(f"Testing move for {side} at depth {count}: {str(move)}")
+        temp_board.push(move)
+        move_dict[move] = score_moves_recurse(temp_board, count, not is_white)[1]
+        
+    # minmax ... if this is the last run, we want the BEST of the LOWEST scores...
+    # AKA - We want to choose the move that has the BEST worst-case scenario
+    print(move_dict)
+    if count == MAX_DEPTH-1 or not is_white: # Want the LOWEST score for
+        best_moves = [k for k, v in move_dict.items() if v == min(move_dict.values())]
+    else:
+        best_moves = [k for k, v in move_dict.items() if v == max(move_dict.values())]
+    move = best_moves[random.randint(0, len(best_moves)-1)]
+    print(f"Returning a {move_dict[move]} evaluation with {str(move)} for depth {count}.")
+    return move, move_dict[move]
+
+class ChessBot1:
     
     def __init__(self, board, legal_moves):
         self.board = board
@@ -10,6 +39,7 @@ class ChessBot:
     def make_move(self):
         moves =  self.__score_moves()
         # Return best move
+        print(moves)
         best_moves = [k for k, v in moves.items() if v == max(moves.values())]
 
         return best_moves[random.randint(0, len(best_moves)-1)]
@@ -19,103 +49,17 @@ class ChessBot:
         move_dict = {key: 0 for key in list(self.legal_moves)}
         # Best practices:
         for move in self.legal_moves:
-            # 1 - Recapture taken pieces
-            last_move, last_board = get_last_move_and_board_state(self.board)
-            if (last_board.is_capture(last_move) and
-                move.to_square == last_move.to_square):
-                # Capture back
-                move_dict[move] += (get_piece_value(self.board.piece_at(move.to_square)) - get_piece_value(self.board.piece_at(last_move.to_square)))
-            
-            # 2 - Capture pieces
-            if (self.board.is_capture(move)):
-                print("CAPTURE")
-                if (square_is_safe(self.board, move.to_square)):
-                    move_dict[move] += get_piece_value(self.board.piece_at(move.to_square))
-                else:
-                    move_dict[move] += (get_piece_value(self.board.piece_at(move.to_square)) - get_piece_value(self.board.piece_at(move.from_square)))
-
-            
-            # 3 - Castle
-            if (self.board.has_castling_rights(self.board.turn)
-            and piece_making_move(self.board, move) == "k"):
-                print("kING AND CAN CASTLE")
-                if move.to_square - move.from_square > 1: # Castling
-                    move_dict[move] += 0.5
-                else:
-                    move_dict[move] -= 0.5
-
-            # Move to safe squares
-            if (square_is_safe(self.board, move.to_square)):
-                if (square_is_safe(self.board, move.from_square)):
-                # If the piece is already safe, then it's not a big deal to move to a safe square
-                    move_dict[move] += 0.9
-                else:
-                    move_dict[move] += get_piece_value(self.board.piece_at(move.from_square))
-                
-            # Activate minor pieces
-            if (self.board.fullmove_number < 10 and 
-                (piece_making_move(self.board, move) == "b" and str(move.from_square) in ["c8", "f8"]) or
-                (piece_making_move(self.board, move) == "n" and str(move.from_square) in ["b8", "g8"])):
-                move_dict[move] += 0.75
-            
-            # 5 - Promote pawns
-            if (piece_making_move(self.board, move) == "p"
-            and move.to_square > 60):
-                print("CAN PROMOTE")
-                if (square_is_safe(self.board, move.to_square)):
-                    move_dict[move] += 8.6 # Queen is 9.5, minus 0.9 for the safe square check already done
-                else:
-                    move_dict[move] += 0.9 # idk
-            
-            # 6 - Try not to move backwards
-            if (chess.square_rank(move.to_square) > chess.square_rank(move.from_square)):
-                move_dict[move] -= (chess.square_rank(move.to_square) - chess.square_rank(move.from_square))/8
-            
-            # 7 - Check number of squares we can attack with a move
-            move_dict[move] += 0.1*new_squares_attacked(self.board, move)
-            
-            # Get rooks to open ranks and then 7th rank
-            if piece_making_move(self.board, move) == "r":
-                move_dict[move] += 0.5 if chess.square_rank(move.to_square) == 7 else 0
-                
-                if is_open_file(self.board, move.to_square):
-                    move_dict[move] += 0.5
-            
-        
+            move_dict[move] = score_move(self.board, move)
+        score_position(self.board, False)
         return move_dict
-        
-#class LearnerBot:
 
-class ChessEnvironment:
-    def __init__(self, board, color):
+class ChessBot2:
+    
+    def __init__(self, board, legal_moves):
         self.board = board
-        self.color = color
-        #self.game_over = False
+        self.legal_moves = legal_moves
         
-    def step(self, move):
-        '''
-        Step should represent each move, I imagine
-        '''
-        
-        # Make the move
-        self.board.push(move)
-        
-        # Check if the game is over
-        if self.board.outcome():
-            self.board.reset()
-            return self.board.fen(), 500 if self.board.outcome().winner == self.color else -500, True
-        
-        # Calculate scoring otherwise
-        # Check point value of positions
-        # Moving pawn forward should be number of points at rank
-        # Moving to a protected square should be loss of points
-        return self.board.fen(), 0, False
-
-
-env = ChessEnvironment()
-state = env.reset()
-done = False
-while not done:
-    move = decide_move()
-    state, reward, done = env.step(move)
-    print(f"State: {state}, Reward: {reward}")
+    def make_move(self):
+        move, eval = score_moves_recurse(self.board, 0, False)
+        print(move, eval)
+        return move
