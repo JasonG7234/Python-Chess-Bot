@@ -34,6 +34,13 @@ def get_last_move_and_board_state(board):
     last_move = last_board.pop()
     return last_move, last_board
 
+def print_moves(board, moves, starting_str=""):
+    for move in moves:
+        print(f"{starting_str}{piece_making_move(board, move)} {chess.square_name(move.from_square)}->{chess.square_name(move.to_square)}")
+        
+def print_move(board, move, starting_str=""):
+    print(f"{starting_str}{piece_making_move(board, move)} {chess.square_name(move.from_square)}->{chess.square_name(move.to_square)}")
+
 def piece_making_move(board, move):
     '''
     Gets the symbol p, n, b, r, q, k for the black pieces.
@@ -142,17 +149,17 @@ def score_piece_count(board, is_white, to_log=False):
         + len(board.pieces(chess.KNIGHT, chess.WHITE))*3
         + len(board.pieces(chess.BISHOP, chess.WHITE))*3.1
         + len(board.pieces(chess.ROOK, chess.WHITE))*5
-        + len(board.pieces(chess.PAWN, chess.WHITE))*9.5
+        + len(board.pieces(chess.QUEEN, chess.WHITE))*9.5
     )
     black_pts = (len(board.pieces(chess.PAWN, chess.BLACK))*1
         + len(board.pieces(chess.KNIGHT, chess.BLACK))*3
         + len(board.pieces(chess.BISHOP, chess.BLACK))*3.1
         + len(board.pieces(chess.ROOK, chess.BLACK))*5
-        + len(board.pieces(chess.PAWN, chess.BLACK))*9.5
+        + len(board.pieces(chess.QUEEN, chess.BLACK))*9.5
     )
     if (to_log):
-        print(f"Piece eval: {white_pts-black_pts if is_white else black_pts-white_pts}")
-    return white_pts-black_pts if is_white else black_pts-white_pts
+        print(f"Piece eval: {white_pts-black_pts if not is_white else black_pts-white_pts}")
+    return white_pts-black_pts if not is_white else black_pts-white_pts
 
 def score_position(board, is_white, to_log=False):
     if (board.outcome()):
@@ -161,10 +168,13 @@ def score_position(board, is_white, to_log=False):
             return 10000
         else:
             return -10000
-    
-    score = score_piece_count(board, is_white, to_log)
-    score += score_board_state(board, is_white, to_log)
-    return score
+    print('=========================================')
+    print(f"EVAL FOR MOVE: {board.peek()}")
+    print('=========================================')
+    score = score_piece_count(board, is_white)
+    board_state_score = score_board_state(board, not is_white, to_log)
+    print(f"Board state score: {board_state_score}")
+    return score + board_state_score
 
 def __points_score_pieces_hanging(board, is_white, to_log):
     piece_types = [chess.PAWN, chess.KNIGHT, chess.BISHOP, chess.ROOK, chess.QUEEN]
@@ -209,7 +219,7 @@ def __points_score_pieces_hanging(board, is_white, to_log):
                     if to_log: print(f"[-{val}] No defender for piece @ {chess.square_name(square)} from attacker @ {list(attacker_squares)[i]}.")
                     score_hanging_pieces -= val
                     break
-
+    print(f"Hanging pieces score: {score_hanging_pieces}")
     return score_hanging_pieces
 
 def __points_pawn_score_from_starting_rank(square, is_white, to_log=False):
@@ -226,9 +236,9 @@ def __points_pawn_score_from_starting_rank(square, is_white, to_log=False):
 def __points_knight_score_on_square(square, is_white, to_log=False):
     '''
     Checks the square a knight is on and scores it according to a PeSTO table
-    Score: 0.1x(avg(https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function))
+    Score: 0.01x(avg(https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function))
     '''
-    score = 0.1*knight_pesto_table[int(square) if is_white else 63-int(square)]
+    score = 0.01*knight_pesto_table[int(square) if is_white else 63-int(square)]
     if to_log:
         print(f"Knight on {chess.square_name(square)} ({square}) is worth {score}.")
     return score
@@ -266,21 +276,22 @@ def __points_rook_score_on_open_file(square, board, is_white, to_log=False):
         print(f"[+0.5] Rook on file {chess.square_name(square)[0]} has an open file.")
     return 0.5
 
-def __points_rook_score_if_stacked(sq1, sq2, to_log):
+def __points_rook_score_if_stacked(board, sq1, sq2, to_log):
     '''
     Checks the square both rooks are on and scores 0.5 if they can see each other.
     Score: 0.5|0
     '''
     # TODO: Ensure the rooks do not have any pieces in between.
-    same_rank = chess.square_rank(sq1) == chess.square_rank(sq2)
-    same_file = chess.square_file(sq1) == chess.square_file(sq2)
+    same_rank = chess.square_rank(sq1) == chess.square_rank(sq2) and not any(board.piece_at(square) for square in chess.SquareSet(chess.BB_FILES[chess.square_rank(sq1)]))
+    same_file = chess.square_file(sq1) == chess.square_file(sq2) and not any(board.piece_at(square) for square in chess.SquareSet(chess.BB_FILES[chess.square_file(sq1)]))
     if same_rank:
         if to_log: print(f"[+0.5] Rooks are on the same rank {chess.square_rank(sq1)}.")
         return 0.5
     elif same_file:
         if to_log: print(f"[+0.5] Rooks are on the same file {chess.square_file(sq1)}.")
+        return 0.5 
     else:
-        if to_log: print(f"[0] Rooks are not on the same file or rank.")
+        if to_log: print(f"[0] Rooks are not on the same file or rank with no pieces in between.")
         return 0
 
 def __points_rook_score_on_seventh_rank(square, is_white, to_log=False):
@@ -330,7 +341,7 @@ def score_board_state(board, is_white, to_log=False):
         
     rooks = board.pieces(chess.ROOK, side)
     list_rooks = list(rooks)
-    if len(rooks) > 1: score+= __points_rook_score_if_stacked(list_rooks[0], list_rooks[1], to_log)
+    if len(rooks) > 1: score+= __points_rook_score_if_stacked(board,list_rooks[0], list_rooks[1], to_log)
     for rook in rooks:
         score+=__points_rook_score_on_seventh_rank(rook, is_white, to_log)
         score+=__points_rook_score_on_open_file(rook, board, is_white, to_log)

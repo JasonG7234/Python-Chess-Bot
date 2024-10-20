@@ -29,6 +29,7 @@ if __name__ == "__main__":
         #time.sleep(2)
     
     print("Game over!")
+    print(board.move_stack)
     display.terminate()
 
 #make_move()
